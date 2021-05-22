@@ -1,7 +1,7 @@
 import React from 'react';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import {SCREENS} from '../constants/screens';
-import {MainScreen} from '../screens/MainScreen';
+import {MainScreen} from '../screens/MainScreen/MainScreen';
 import {ShoutScreen} from '../screens/ShoutScreen';
 
 export type AppNavigatorParams = {
