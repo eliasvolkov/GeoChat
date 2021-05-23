@@ -13,6 +13,7 @@ export const MainScreen = observer(() => {
   const navigation = useNavigation();
 
   useEffect(() => {
+    shoutsStore.fetchShouts();
     shoutsStore.setLocation();
   }, []);
 

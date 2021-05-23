@@ -1,7 +1,8 @@
-import {flow, types} from 'mobx-state-tree';
+import {cast, flow, types} from 'mobx-state-tree';
 import Geolocation from '@react-native-community/geolocation';
 import {PermissionsService} from '../services/PermissionsService';
 import {CoordinatesType} from '../types';
+import {getInitialShouts} from '../api/get';
 
 const Shout = types.model('ShoutModel', {
   id: types.identifier,
@@ -31,7 +32,7 @@ export const ShoutsStore = types
   .model({
     points: INITIAL_POINTS,
     hasLocationPermissions: false,
-    shouts: types.array(types.optional(types.array(Shout), [])),
+    shouts: types.optional(types.array(Shout), []),
     coordinates: types.optional(Coordinates, INITIAL_COORDINATES),
   })
   .actions(self => ({
@@ -47,6 +48,15 @@ export const ShoutsStore = types
           };
           self.coordinates.setCoordinates(coordinates);
         });
+      }
+    }),
+
+    fetchShouts: flow(function* () {
+      try {
+        const shouts = getInitialShouts();
+        self.shouts = cast(shouts);
+      } catch (error) {
+        console.log(error);
       }
     }),
   }));
