@@ -2,7 +2,7 @@ import React from 'react';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import {SCREENS} from '../constants/screens';
 import {MainScreen} from '../screens/MainScreen/MainScreen';
-import {ShoutScreen} from '../screens/ShoutScreen';
+import {ShoutCreationScreen} from '../screens/ShoutCreationScreen/ShoutCreationScreen';
 
 export type AppNavigatorParams = {
   [SCREENS.MAIN]: undefined;
@@ -16,7 +16,7 @@ export const AppNavigator = () => {
       <Stack.Screen name={SCREENS.MAIN} component={MainScreen} />
       <Stack.Screen
         name={SCREENS.SHOUT_CREATE}
-        component={ShoutScreen}
+        component={ShoutCreationScreen}
         options={{
           ...TransitionPresets.ModalSlideFromBottomIOS,
         }}
