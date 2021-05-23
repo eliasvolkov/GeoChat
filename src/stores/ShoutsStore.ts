@@ -1,5 +1,7 @@
-import {Instance, types} from 'mobx-state-tree';
+import {flow, types} from 'mobx-state-tree';
 import Geolocation from '@react-native-community/geolocation';
+import {PermissionsService} from '../services/PermissionsService';
+import {CoordinatesType} from '../types';
 
 const Shout = types.model('ShoutModel', {
   id: types.identifier,
@@ -7,11 +9,17 @@ const Shout = types.model('ShoutModel', {
   text: types.string,
 });
 
-const Coordinates = types.model('CoordinatesModel', {
-  longitude: types.number,
-  latitude: types.number,
-});
-type Coordinates = Instance<typeof Coordinates>;
+const Coordinates = types
+  .model('CoordinatesModel', {
+    longitude: types.number,
+    latitude: types.number,
+  })
+  .actions(self => ({
+    setCoordinates({longitude, latitude}: CoordinatesType) {
+      self.longitude = longitude;
+      self.latitude = latitude;
+    },
+  }));
 
 const INITIAL_POINTS = 15;
 const INITIAL_COORDINATES = {
@@ -22,20 +30,23 @@ const INITIAL_COORDINATES = {
 export const ShoutsStore = types
   .model({
     points: INITIAL_POINTS,
+    hasLocationPermissions: false,
     shouts: types.array(types.optional(types.array(Shout), [])),
     coordinates: types.optional(Coordinates, INITIAL_COORDINATES),
   })
   .actions(self => ({
-    afterCreate() {
-      Geolocation.getCurrentPosition(({coords}) => {
-        this.setCoordinates({
-          longitude: coords.longitude,
-          latitude: coords.latitude,
+    setLocation: flow(function* () {
+      const hasLocationPermissions =
+        yield PermissionsService.requestLocationPermissions();
+      self.hasLocationPermissions = hasLocationPermissions;
+      if (hasLocationPermissions) {
+        Geolocation.getCurrentPosition(({coords}) => {
+          const coordinates = {
+            longitude: coords.longitude,
+            latitude: coords.latitude,
+          };
+          self.coordinates.setCoordinates(coordinates);
         });
-      });
-    },
-
-    setCoordinates(coordinates: Coordinates) {
-      self.coordinates = coordinates;
-    },
+      }
+    }),
   }));
