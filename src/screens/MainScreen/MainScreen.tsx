@@ -1,21 +1,31 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {observer} from 'mobx-react-lite';
 import {useMst} from '../../stores/RootStore';
 import {Container, Map, StyledPoints, StyledButton} from './MainScreen.styles';
 import {shoutButton} from '../../assets';
 import {openSettings} from 'react-native-permissions';
 import {SCREENS} from '../../constants/screens';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {AppState} from 'react-native';
+import {INITIAL_COORDINATES} from '../../constants/shoutsModule';
+import {Shout} from '../../components/Shout/Shout';
 
 export const MainScreen = observer(() => {
   const {shoutsStore} = useMst();
   const navigation = useNavigation();
+  const [coordinates, setCoordinates] = useState(INITIAL_COORDINATES);
 
   useEffect(() => {
-    shoutsStore.fetchShouts();
     shoutsStore.setLocation();
   }, []);
+
+  useFocusEffect(() => {
+    fetchShoutsByChosenPosition();
+  });
+
+  const fetchShoutsByChosenPosition = useCallback(() => {
+    shoutsStore.fetchShoutsByChosenPosition(coordinates);
+  }, [coordinates]);
 
   useEffect(() => {
     AppState.addEventListener('change', shoutsStore.setLocation);

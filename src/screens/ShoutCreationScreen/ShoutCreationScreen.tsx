@@ -5,78 +5,48 @@ import {
   StyledButton,
   StyledCarousel,
 } from './ShoutCreationScreen.styles';
-import {
-  bones,
-  defaultShout,
-  frame,
-  love,
-  movie,
-  music,
-  sport,
-  submitShoutButton,
-  vitrage,
-} from '../../assets';
+import {submitShoutButton} from '../../assets';
 import {Shout} from '../../components/Shout/Shout';
 import {SCREEN_WIDTH} from '../../constants/layout';
 import {KeyboardAvoidingView} from 'react-native';
+import {useMst} from '../../stores/RootStore';
+import {useNavigation} from '@react-navigation/native';
+import {SCREENS} from '../../constants/screens';
+import {SHOUTS} from '../../constants/shoutsModule';
 
-const SHOUTS = [
-  {
-    name: 'frame',
-    image: frame,
-  },
-  {
-    name: 'movie',
-    image: movie,
-  },
-  {
-    name: 'music',
-    image: music,
-  },
-  {
-    name: 'sport',
-    image: sport,
-  },
-  {
-    name: 'love',
-    image: love,
-  },
-  {
-    name: 'frame',
-    image: defaultShout,
-  },
-  {
-    name: 'movie',
-    image: vitrage,
-  },
-  {
-    name: 'music',
-    image: bones,
-  },
-  {
-    name: 'sport',
-    image: sport,
-  },
-  {
-    name: 'love',
-    image: love,
-  },
-];
+const data = Object.keys(SHOUTS);
 
 export const ShoutCreationScreen = observer(() => {
+  const navigation = useNavigation();
   const [shoutText, setShoutText] = useState('');
   const [isChanged, setIsChanged] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const {shoutsStore} = useMst();
+
+  const onSubmit = useCallback(() => {
+    shoutsStore.submitCast(
+      {
+        imageName: data[activeIndex],
+        text: shoutText || data[activeIndex],
+      },
+      () => navigation.navigate(SCREENS.MAIN),
+    );
+  }, [shoutText, activeIndex]);
 
   const onChane = useCallback((value: string) => {
     setIsChanged(true);
     setShoutText(value);
   }, []);
 
+  const onSnapToItem = useCallback((slideIndex: number) => {
+    setActiveIndex(slideIndex);
+  }, []);
+
   const renderItem = ({item}: {item: any}) => {
     return (
       <Shout
-        image={item.image}
-        value={isChanged ? shoutText : item.name}
+        image={SHOUTS[item]}
+        value={isChanged ? shoutText : item}
         onChange={onChane}
       />
     );
@@ -84,9 +54,9 @@ export const ShoutCreationScreen = observer(() => {
 
   return (
     <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
-      <Container>
+      <Container keyboardShouldPersistTaps="always">
         <StyledCarousel
-          data={SHOUTS}
+          data={data}
           itemWidth={320}
           renderItem={renderItem}
           initialNumToRender={1}
@@ -96,9 +66,10 @@ export const ShoutCreationScreen = observer(() => {
           horizontal
           sliderWidth={SCREEN_WIDTH}
           inactiveSlideScale={0.85}
+          onSnapToItem={onSnapToItem}
         />
 
-        <StyledButton onPress={() => {}} image={submitShoutButton} />
+        <StyledButton onPress={onSubmit} image={submitShoutButton} />
       </Container>
     </KeyboardAvoidingView>
   );

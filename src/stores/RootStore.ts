@@ -38,11 +38,11 @@ export const createStore = (): RootInstance => {
     shoutsStore,
   });
 
-  persist('shoutsStore', shoutsStore, {
-    storage: AsyncStorage,
-    jsonify: true,
-    blacklist: [],
-  });
+  // persist('shoutsStore', shoutsStore, {
+  //   storage: AsyncStorage,
+  //   jsonify: true,
+  //   blacklist: [],
+  // });
 
   return rootStore;
 };

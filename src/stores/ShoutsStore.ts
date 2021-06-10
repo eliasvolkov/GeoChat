@@ -1,14 +1,20 @@
-import {cast, flow, types} from 'mobx-state-tree';
+import {cast, flow, Instance, types} from 'mobx-state-tree';
 import Geolocation from '@react-native-community/geolocation';
 import {PermissionsService} from '../services/PermissionsService';
 import {CoordinatesType} from '../types';
 import {getInitialShouts} from '../api/get';
+import {postShout} from '../api/post';
+import uuid from 'react-native-uuid';
+import {INITIAL_COORDINATES, INITIAL_POINTS} from '../constants/shoutsModule';
 
 const Shout = types.model('ShoutModel', {
   id: types.identifier,
   image: types.string,
   text: types.string,
+  longitude: types.number,
+  latitude: types.number,
 });
+export type Shout = Instance<typeof Shout>;
 
 const Coordinates = types
   .model('CoordinatesModel', {
@@ -21,12 +27,6 @@ const Coordinates = types
       self.latitude = latitude;
     },
   }));
-
-const INITIAL_POINTS = 15;
-const INITIAL_COORDINATES = {
-  longitude: -122.406417,
-  latitude: 37.785834,
-};
 
 export const ShoutsStore = types
   .model({
@@ -51,10 +51,53 @@ export const ShoutsStore = types
       }
     }),
 
-    fetchShouts: flow(function* () {
+    fetchInitialShouts: flow(function* () {
       try {
-        const shouts = getInitialShouts();
+        const shouts = getInitialShouts(self.coordinates);
         self.shouts = cast(shouts);
+      } catch (error) {
+        console.log(error);
+      }
+    }),
+    fetchShoutsByChosenPosition: flow(function* ({
+      longitude,
+      latitude,
+    }: {
+      longitude: number;
+      latitude: number;
+    }) {
+      try {
+        const shouts = getInitialShouts({
+          longitude,
+          latitude,
+        });
+        self.shouts = cast(shouts);
+      } catch (error) {
+        console.log(error);
+      }
+    }),
+
+    submitCast: flow(function* (
+      {
+        imageName,
+        text,
+      }: {
+        imageName: string;
+        text: string;
+      },
+      onSuccess: () => void,
+    ) {
+      try {
+        const shout = {
+          id: uuid.v4(),
+          image: imageName,
+          text,
+          ...self.coordinates,
+        };
+        console.log('=====', shout);
+        postShout(shout);
+        self.points -= 3;
+        onSuccess();
       } catch (error) {
         console.log(error);
       }

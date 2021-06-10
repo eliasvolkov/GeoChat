@@ -25,4 +25,6 @@ export const StyledInput = styled.TextInput`
   flex-wrap: wrap;
   width: 60%;
   text-align: center;
+
+  text-transform: uppercase;
 `;
